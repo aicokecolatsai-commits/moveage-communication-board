@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="MoveAge 動齡 — 頭部控制測試原型">
+  <title>動齡頭部控制測試原型</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* 覆蓋原有樣式，為了 3x3 大網格做最佳化 */
+    .keyboard-grid-3x3 {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 16px;
+      padding: 16px;
+      height: 100%;
+    }
+    
+    .key-mega {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border: 3px solid var(--border-color);
+      border-radius: 24px;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .key-mega.gaze-hover {
+      border-color: var(--color-primary);
+      background: var(--bg-elevated);
+      transform: scale(1.02);
+    }
+
+    .key-mega.gaze-active {
+      border-color: var(--color-success);
+      background: rgba(52,199,89,0.15);
+      transform: scale(1.04);
+      box-shadow: 0 0 30px rgba(52,199,89,0.4);
+    }
+
+    .key-mega .sub-label {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    .key-mega.action-back {
+      background: rgba(232, 101, 90, 0.1);
+      color: var(--color-coral);
+      border-color: rgba(232, 101, 90, 0.3);
+    }
+    .key-mega.action-back.gaze-active {
+      background: rgba(232, 101, 90, 0.3);
+      border-color: var(--color-coral);
+    }
+
+    .key-mega .dwell-progress {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 8px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+      width: 0%;
+      transition: width 50ms linear;
+    }
+    
+    .keyboard-body { padding: 0; }
+  </style>
+  <script type="module" crossorigin src="./assets/index-DiOGfVOI.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BC1z8SXg.css">
+</head>
+<body>
+
+  <!-- ===== 頂部標題列 (App Bar) ===== -->
+  <header id="app-header" class="app-header">
+    <div class="header-content">
+      <div class="header-icon">👁️</div>
+      <div class="header-text">
+        <h1>動齡頭部控制測試原型</h1>
+        <p class="header-subtitle">MoveAge Head Tracking Prototype</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 主要內容區 ===== -->
+  <main id="main-content" class="page-content">
+
+    <!-- 攝影機顯示卡片 -->
+    <section id="video-section" class="card video-card">
+      <div id="video-container" class="video-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="output_canvas"></canvas>
+        <div id="gaze_dot" class="gaze-dot"></div>
+        <div id="video-placeholder" class="video-placeholder">
+          <div class="placeholder-icon">📷</div>
+          <p>點擊下方按鈕開啟攝影機</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 狀態與數據卡片 -->
+    <section id="status-section" class="card status-card">
+      <div class="status-header">
+        <span id="status_badge" class="badge badge-loading">🔄 準備中</span>
+        <span id="fps_counter" class="fps-counter">-- FPS</span>
+      </div>
+
+      <div class="data-grid">
+        <div class="data-item">
+          <div class="data-icon" style="background: var(--color-teal-light); color: var(--color-teal);">👁️</div>
+          <div class="data-info">
+            <span class="data-label">鼻尖位置</span>
+            <span id="left_iris" class="data-value">--</span>
+          </div>
+        </div>
+        <div class="data-item">
+          <div class="data-icon" style="background: var(--color-purple-light); color: var(--color-purple);">👁️</div>
+          <div class="data-info">
+            <span class="data-label">張嘴程度</span>
+            <span id="right_iris" class="data-value">--</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 操作按鈕 -->
+    <section id="controls-section" class="controls-section">
+      <button id="enable_cam_btn" class="btn-primary" onclick="handleCameraToggle()">
+        <span class="btn-icon">📷</span>
+        <span id="btn_label">開啟攝影機</span>
+      </button>
+      <button id="calibrate_btn" class="btn-secondary" onclick="handleStartCalibration()">
+        <span class="btn-icon">🎯</span>
+        <span>校準</span>
+      </button>
+      <button id="keyboard_btn" class="btn-outline" onclick="handleOpenKeyboard()">
+        <span class="btn-icon">⌨️</span>
+        <span>注音鍵盤</span>
+      </button>
+    </section>
+
+    <!-- 說明卡片 -->
+    <section id="tips-section" class="card tips-card">
+      <h2>💡 使用注意事項</h2><p>這是測試原型，目前使用頭部移動與張嘴操作，尚未提供眼球視線追蹤。請勿作為唯一的緊急溝通工具。</p>
+      <ul class="tips-list">
+        <li><span class="tip-icon">☀️</span>請確保臉部光線充足，避免強烈背光</li>
+        <li><span class="tip-icon">📏</span>保持臉部與螢幕距離約 40-60 公分</li>
+        <li><span class="tip-icon">👤</span><b>頭部轉動</b>：微幅轉動您的頭部（鼻尖）來移動游標</li>
+        <li><span class="tip-icon">😲</span><b>張嘴點擊</b>：只要嘴巴微微張開，就會立刻觸發「點擊」</li>
+        <li><span class="tip-icon">🎯</span>開啟攝影機後，請先點擊「校準」並正視螢幕，設定您的頭部中心點</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- ===== 校準疊層 ===== -->
+  <div id="calibration-overlay" class="calibration-overlay">
+    <div class="calibration-instruction">
+      <h2>🎯 頭部中心點校準</h2>
+      <p>請將頭部擺正在最舒適的中心位置<br>並正視螢幕中央... (1.5秒後自動設定)</p>
+    </div>
+  </div>
+
+  <!-- ===== 階層式注音鍵盤疊層 ===== -->
+  <div id="keyboard-overlay" class="keyboard-overlay">
+    <div class="keyboard-topbar">
+      <span class="keyboard-topbar-title">👁️ 大字版頭部控制/觸控輸入 (3x3)</span>
+      <button class="keyboard-close-btn" onclick="handleCloseKeyboard()">✕ 關閉</button>
+    </div>
+
+    <!-- 文字輸出區 -->
+    <div class="text-output-area">
+      <div class="text-output">
+        <span id="text-output-content"></span><span class="text-cursor"></span>
+      </div>
+      <!-- 選字區 (Candidate Row) -->
+      <div id="candidate-row" style="display:flex; gap:8px; margin-top:12px; overflow-x:auto; padding-bottom:8px;">
+        <!-- JS 會動態產生候選字 -->
+      </div>
+    </div>
+
+    <!-- 動態產生 3x3 網格 -->
+    <div class="keyboard-body" id="dynamic-keyboard-container">
+      <!-- JS will populate this -->
+    </div>
+  </div>
+
+</body>
+</html>
+
