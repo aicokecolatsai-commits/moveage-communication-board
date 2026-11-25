@@ -79,7 +79,7 @@
     
     .keyboard-body { padding: 0; }
   </style>
-  <script type="module" crossorigin src="./assets/index-Ct1q5Ked.js"></script>
+  <script type="module" crossorigin src="./assets/index-aIFWDpxx.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-BDe2v1j7.css">
 </head>
 <body>
@@ -102,7 +102,7 @@
       <div class="board-heading"><div><p class="board-kicker">溝通板 · 測試版</p><h2 id="board-title">你想說什麼？</h2><p>選擇卡片後會自動朗讀，讓身旁的人聽見你的需求。</p></div><button type="button" id="board-speak" class="board-action">再次朗讀</button></div>
       <div id="board-message" class="board-message" aria-live="polite">請選擇一張卡片</div>
       <div class="board-grid" id="board-grid"></div>
-      <div class="board-settings"><label for="pointer-mode">游標控制</label><select id="pointer-mode"><option value="head">頭動控制</option><option value="eye">眼動實驗</option></select><button type="button" id="eye-calibrate" class="board-action" hidden>開始眼動校準</button><p id="eye-mode-info" hidden>眼動功能為實驗用途，請固定裝置並保持頭部位置。校準或視窗變動後須重新測試；效果因人與設備而異。</p><label for="selection-mode">選取方式</label><select id="selection-mode"><option value="mouth">張嘴選取</option><option value="dwell">停留選取（2 秒）</option><option value="off">暫停追蹤選取</option></select><div class="mouth-control"><label for="mouth-threshold">張嘴觸發門檻：<output id="mouth-threshold-value">8%</output></label><input id="mouth-threshold" type="range" min="2" max="15" value="8" step="1"><p>張嘴較費力時可調低；若經常誤觸，請調高。請先閉嘴，再張嘴選取。</p></div><p id="board-tracking-status" role="status">尚未啟用頭動。請先開啟攝影機並校準。</p><p>使用頭動前請開啟攝影機並校準。停留選取觸發後，需移開再選取。</p></div>
+      <div class="board-settings"><label for="pointer-mode">游標控制</label><select id="pointer-mode"><option value="head">頭動控制</option><option value="eye">眼動實驗</option></select><button type="button" id="eye-calibrate" class="board-action" hidden>開始眼動校準</button><p id="eye-mode-info" hidden>眼動功能為實驗用途，請固定裝置並保持頭部位置。校準或視窗變動後須重新測試；效果因人與設備而異。</p><label for="selection-mode">選取方式</label><select id="selection-mode"><option value="mouth">張嘴選取</option><option value="dwell">停留選取（2 秒）</option><option value="off">暫停追蹤選取</option></select><div class="mouth-control"><label for="mouth-threshold">張嘴觸發門檻：<output id="mouth-threshold-value">8%</output></label><input id="mouth-threshold" type="range" min="2" max="15" value="8" step="1"><p>張嘴較費力時可調低；若經常誤觸，請調高。請先閉嘴，再張嘴選取。</p></div><p id="board-tracking-status" role="status">尚未啟用頭動。請先開啟攝影機並校準。</p><p>使用頭動或眼動前，請開啟攝影機並完成對應校準。停留選取後，需移開再選取。</p></div>
     </section>
 
     <!-- 攝影機顯示卡片 -->
@@ -110,7 +110,6 @@
       <div id="video-container" class="video-container">
         <video id="webcam" autoplay playsinline muted></video>
         <canvas id="output_canvas"></canvas>
-        <div id="gaze_dot" class="gaze-dot"></div>
         <div id="video-placeholder" class="video-placeholder">
           <div class="placeholder-icon">📷</div>
           <p>點擊下方按鈕開啟攝影機</p>
@@ -177,6 +176,8 @@
     <div class="eye-overlay-instructions"><strong id="eye-instruction">請注視圓點</strong><p id="eye-progress"></p><button type="button" id="eye-cancel">取消眼動校準</button></div>
     <div id="eye-target" class="eye-target" aria-hidden="true"></div>
   </div>
+
+  <div id="gaze_dot" class="gaze-dot" aria-hidden="true"></div>
 
   <!-- ===== 校準疊層 ===== -->
   <div id="calibration-overlay" class="calibration-overlay">
